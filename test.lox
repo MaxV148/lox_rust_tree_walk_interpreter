@@ -1,4 +1,1 @@
 var i = 2;
-fun print(){
-    var k = "Hallo";
-}
