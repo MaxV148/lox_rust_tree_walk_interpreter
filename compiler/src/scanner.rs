@@ -8,8 +8,8 @@ pub struct Scanner<I: Iterator<Item = char>> {
     line: usize,
     col: usize,
     start: usize,
-    ch0: Option<char>,
-    ch1: Option<char>,
+    current_char: Option<char>,
+    look_a_head_char: Option<char>,
 }
 impl<I> Scanner<I>
 where
@@ -23,13 +23,12 @@ where
             line: 1,
             col: 0,
             start: 0,
-            ch0: None,
-            ch1: None,
+            current_char: None,
+            look_a_head_char: None,
         }
     }
 
     pub fn scan_tokens(&mut self) -> &Vec<Token> {
-        self.ch0 = self.chars.next();
         loop {
             match self.advance() {
                 Some(c) => {
@@ -70,7 +69,7 @@ where
                 if self.match_binary_operator() {
                     self.add_token(TokenType::EQUAL_EQUAL, Some("==".to_string()), None);
                 } else {
-                    self.add_token(TokenType::EQUAL, Some("==".to_string()), None);
+                    self.add_token(TokenType::EQUAL, Some("=".to_string()), None);
                 }
             }
             '<' => {
@@ -127,16 +126,20 @@ where
             .push(Token::new(token_type, lexeme, literal, self.line, col));
     }
     fn advance(&mut self) -> Option<char> {
-        let c = self.ch0;
+        let mut current = self.look_a_head_char;
+        //init
+        if current.is_none(){
+            current = self.chars.next();
+        }
         let next = self.chars.next();
-        self.ch0 = self.ch1;
-        self.ch1 = next;
+        self.current_char = current;
+        self.look_a_head_char = next;
         self.col += 1;
-        c
+        current
     }
 
     fn match_binary_operator(&mut self) -> bool {
-        match self.advance() {
+        match self.look_a_head_char{
             Some(next) => {
                 if next == '=' {
                     true
@@ -174,12 +177,18 @@ where
         let mut num_str = String::new();
         num_str.push(first_c);
         loop {
-            match self.ch1 {
-                Some(next) => {
-                    if next.is_digit(10) {
-                        num_str.push(next);
-                    } else if next == '.' && !num_str.contains('.') {
-                        num_str.push(next);
+            match self.look_a_head_char {
+                Some(look_a_head) => {
+                    if look_a_head.is_digit(10) {
+                        match self.advance(){
+                            Some(next) => num_str.push(next),
+                            None => break,
+                        }
+                    } else if look_a_head == '.' && !num_str.contains('.') {
+                        match self.advance(){
+                            Some(next) => num_str.push(next),
+                            None => break,
+                        }
                     } else {
                         break;
                     }
@@ -195,7 +204,7 @@ where
         let mut ident = String::new();
         ident.push(first_c);
         loop {
-            match self.ch1 {
+            match self.look_a_head_char {
                 Some(look_a_head) => {
                     if look_a_head.is_alphabetic() || look_a_head == '_' {
                         match self.advance() {
