@@ -1,5 +1,5 @@
 use crate::token_types::{Literal, Token, TokenType};
-use std::{collections::HashMap, str::FromStr};
+use std::str::FromStr;
 
 pub struct Scanner<I: Iterator<Item = char>> {
     chars: I,
@@ -59,35 +59,52 @@ where
             '*' => self.add_token(TokenType::STAR, Some(c.to_string()), None),
             //two char tokens
             '!' => {
-                if self.match_binary_operator() {
+                if self.match_next('=') {
                     self.add_token(TokenType::BANG_EQUAL, Some("!=".to_string()), None);
                 } else {
                     self.add_token(TokenType::BANG, Some("=".to_string()), None);
                 }
             }
             '=' => {
-                if self.match_binary_operator() {
+                if self.match_next('=') {
                     self.add_token(TokenType::EQUAL_EQUAL, Some("==".to_string()), None);
                 } else {
                     self.add_token(TokenType::EQUAL, Some("=".to_string()), None);
                 }
             }
             '<' => {
-                if self.match_binary_operator() {
+                if self.match_next('=') {
                     self.add_token(TokenType::LESS_EQUAL, Some("<=".to_string()), None);
                 } else {
                     self.add_token(TokenType::LESS, Some("<".to_string()), None);
                 }
             }
             '>' => {
-                if self.match_binary_operator() {
+                if self.match_next('=') {
                     self.add_token(TokenType::GREATER_EQUAL, Some(">=".to_string()), None);
                 } else {
                     self.add_token(TokenType::GREATER, Some(">".to_string()), None);
                 }
             }
             //slash command
-            '/' => {}
+            '/' => {
+                if self.match_next('/') {
+                    loop {
+                        match self.look_a_head_char {
+                            Some(n) => {
+                                if n == '\n' {
+                                    break;
+                                } else {
+                                    self.advance();
+                                }
+                            }
+                            None => break,
+                        }
+                    }
+                } else {
+                    self.add_token(TokenType::SLASH, Some("/".to_string()), None);
+                }
+            }
             ' ' => (),
             '\r' => (),
             '\t' => (),
@@ -128,7 +145,7 @@ where
     fn advance(&mut self) -> Option<char> {
         let mut current = self.look_a_head_char;
         //init
-        if current.is_none(){
+        if current.is_none() {
             current = self.chars.next();
         }
         let next = self.chars.next();
@@ -138,10 +155,11 @@ where
         current
     }
 
-    fn match_binary_operator(&mut self) -> bool {
-        match self.look_a_head_char{
-            Some(next) => {
-                if next == '=' {
+    fn match_next(&mut self, expected: char) -> bool {
+        match self.look_a_head_char {
+            Some(c) => {
+                if c == expected {
+                    self.advance();
                     true
                 } else {
                     false
@@ -180,12 +198,12 @@ where
             match self.look_a_head_char {
                 Some(look_a_head) => {
                     if look_a_head.is_digit(10) {
-                        match self.advance(){
+                        match self.advance() {
                             Some(next) => num_str.push(next),
                             None => break,
                         }
                     } else if look_a_head == '.' && !num_str.contains('.') {
-                        match self.advance(){
+                        match self.advance() {
                             Some(next) => num_str.push(next),
                             None => break,
                         }
