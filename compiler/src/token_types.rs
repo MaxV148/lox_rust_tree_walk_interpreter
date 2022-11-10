@@ -17,13 +17,13 @@ pub enum TokenType {
 
     // One or two character tokens.
     BANG,
-    BANG_EQUAL,
+    BangEqual,
     EQUAL,
-    EQUAL_EQUAL,
+    EqualEqual,
     GREATER,
-    GREATER_EQUAL,
+    GreaterEqual,
     LESS,
-    LESS_EQUAL,
+    LessEqual,
 
     // Literals.
     IDENTIFIER,

@@ -45,28 +45,28 @@ impl Scanner {
             //two char tokens
             '!' => {
                 if self.match_char('=') {
-                    self.add_token(TokenType::BANG_EQUAL)
+                    self.add_token(TokenType::BangEqual)
                 } else {
                     self.add_token(TokenType::BANG)
                 }
             }
             '=' => {
                 if self.match_char('=') {
-                    self.add_token(TokenType::EQUAL_EQUAL)
+                    self.add_token(TokenType::EqualEqual)
                 } else {
                     self.add_token(TokenType::EQUAL)
                 }
             }
             '<' => {
                 if self.match_char('=') {
-                    self.add_token(TokenType::LESS_EQUAL)
+                    self.add_token(TokenType::LessEqual)
                 } else {
                     self.add_token(TokenType::LESS)
                 }
             }
             '>' => {
                 if self.match_char('=') {
-                    self.add_token(TokenType::GREATER_EQUAL)
+                    self.add_token(TokenType::GreaterEqual)
                 } else {
                     self.add_token(TokenType::GREATER)
                 }
@@ -101,7 +101,7 @@ impl Scanner {
 
     fn advance(&mut self) -> char {
         self.current += 1;
-        *self.source.get(self.current - 1).unwrap()
+        *self.source.get(self.current - 1).expect("Parsing error at line: {}")
     }
     fn add_token(&mut self, token_type: TokenType) {
         self.add_token_with_literal(token_type, None);
