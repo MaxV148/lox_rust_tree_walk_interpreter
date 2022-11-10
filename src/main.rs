@@ -3,7 +3,7 @@ use std::{
     fs::{self},
     io::{self, BufRead, BufReader},
 };
-use compiler::Scanner;
+use compiler::{Scanner, Parser};
 
 fn main() {
 
@@ -45,7 +45,10 @@ fn run_prompt() {
 fn run(source: String) {
     let mut scanner = Scanner::new(source);
     let tokens = scanner.scan_tokens();
-    for token in tokens {
+    let mut parser = Parser::new(tokens.to_vec());//TODO: remove to_vec()!
+    let exp = parser.parse();
+    println!("{:?}",exp);
+    /* for token in tokens {
         println!("{}", token);
-    }
+    } */
 }
